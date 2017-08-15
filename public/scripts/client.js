@@ -1,36 +1,33 @@
 console.log('js');
 
-$(document).ready(function () {
-  console.log('JQ');
-  addJokes();
-  $('#addJokeButton').on('click', function () {
-    console.log('addJokeButton on click');
-    $.ajax({
+var app = angular.module('JokeApp', []);
+
+app.controller('JokeController', ['$http', function ($http) {
+  console.log('Joke Controller loaded');
+  var self = this;
+  self.jokes = [];
+
+  self.getJokes = function() {
+    $http({
+      method: 'GET',
+      url: '/jokes'
+    }).then(function (response){
+      console.log(response);
+      console.log(response.data);
+      self.jokes = response.data;
+    });
+  };
+
+  self.postNewJoke = function () {
+    $http({
       method: 'POST',
       url: '/jokes',
-      data: {
-        whoseJoke: $('#whoseJokeIn').val(),
-        jokeQuestion: $('#questionIn').val(),
-        punchLine: $('#punchlineIn').val()
-      },
-      success: function (response) {
-        console.log(response);
-        addJokes();
-      }
-    });
-  }); // end addJokeButton on click
-}); // end doc ready
-function addJokes(){
-  $.ajax({
-    method: 'GET',
-    url: '/jokes',
-    success: function (response) {
+      data: self.newJoke
+    }).then(function(response){
       console.log(response);
-      $('#outputDiv').empty();
-      for (var i = 0; i < response.length; i++) {
-        var joke = response[i];
-        $('#outputDiv').append('<div>' + joke.whosejoke + ' : ' + joke.jokequestion + ' | ' + joke.punchline + '</div>');
-      }
-    }
-  });
-}
+      self.getJokes();
+    })
+  };
+
+  self.getJokes();
+}]);
